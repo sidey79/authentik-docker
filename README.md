@@ -34,6 +34,14 @@ Open:
 
 Use your existing Caddy reverse proxy as entrypoint and expose authentik only internally.
 
+## SMTP relay integration
+
+For outbound mails (invites, password reset, notifications), this stack can use
+[`smtp-relay-docker`](https://github.com/sidey79/smtp-relay-docker).
+
+The default `.env.example` points Authentik to SMTP host `smtp-relay` on port `25` inside
+`network_backend_net`.
+
 ## Networking model
 
 - `authentik-server` is attached to:
