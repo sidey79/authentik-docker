@@ -1,23 +1,6 @@
 name: authentik-docker
 
 services:
-  postgresql:
-    image: docker.io/library/postgres:16.13@sha256:78df81b1442dcc764c1104154da7162635e40cfffe67579c42a1c1b96dfc209c
-    volumes:
-      - postgresql_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${AUTHENTIK_POSTGRESQL__NAME}
-      POSTGRES_USER: ${AUTHENTIK_POSTGRESQL__USER}
-      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
-    networks:
-      - authentik_internal
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d ${AUTHENTIK_POSTGRESQL__NAME} -U ${AUTHENTIK_POSTGRESQL__USER}"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-
   authentik-server:
     image: ghcr.io/goauthentik/server:2026.2.1
     depends_on:
@@ -70,11 +53,22 @@ services:
     command: worker
     restart: unless-stopped
 
-volumes:
-  postgresql_data:
-  authentik_media:
-  authentik_certs:
-  authentik_templates:
+  postgresql:
+    image: docker.io/library/postgres:16.13@sha256:78df81b1442dcc764c1104154da7162635e40cfffe67579c42a1c1b96dfc209c
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${AUTHENTIK_POSTGRESQL__NAME}
+      POSTGRES_USER: ${AUTHENTIK_POSTGRESQL__USER}
+      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
+    networks:
+      - authentik_internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${AUTHENTIK_POSTGRESQL__NAME} -U ${AUTHENTIK_POSTGRESQL__USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
 networks:
   authentik_internal:
@@ -82,3 +76,9 @@ networks:
   proxy_net:
     external: true
     name: network_backend_net
+
+volumes:
+  postgresql_data:
+  authentik_media:
+  authentik_certs:
+  authentik_templates:
