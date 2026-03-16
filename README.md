@@ -6,7 +6,6 @@ Docker stack for authentik (OIDC IdP), based on `template_docker`.
 
 - `docker-compose.yml` with:
   - `postgresql`
-  - `redis`
   - `authentik-server`
   - `authentik-worker`
 - `.env.example` as secret-free template
