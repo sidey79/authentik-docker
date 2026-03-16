@@ -22,8 +22,7 @@ docker compose up -d
 
 Open:
 
-- http://localhost:9000
-- https://localhost:9443
+- via reverse proxy only (no host port publishing in this stack)
 
 ## Security notes
 
@@ -34,3 +33,11 @@ Open:
 ## Reverse proxy integration (recommended)
 
 Use your existing Caddy reverse proxy as entrypoint and expose authentik only internally.
+
+## Networking model
+
+- `authentik-server` is attached to:
+  - `authentik_internal` (internal app network)
+  - external proxy network `network_backend_net`
+- No container ports are published to the host.
+- Ensure `network_backend_net` exists before starting this stack.
