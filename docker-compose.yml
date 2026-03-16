@@ -1,49 +1,31 @@
+name: authentik-docker
+
 services:
   postgresql:
     image: docker.io/library/postgres:16.13@sha256:78df81b1442dcc764c1104154da7162635e40cfffe67579c42a1c1b96dfc209c
-    restart: unless-stopped
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${AUTHENTIK_POSTGRESQL__NAME}
       POSTGRES_USER: ${AUTHENTIK_POSTGRESQL__USER}
       POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
+    networks:
+      - authentik_internal
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d ${AUTHENTIK_POSTGRESQL__NAME} -U ${AUTHENTIK_POSTGRESQL__USER}"]
       interval: 30s
       timeout: 5s
       retries: 5
-    volumes:
-      - postgresql_data:/var/lib/postgresql/data
-    networks:
-      - authentik_internal
 
   authentik-server:
-    image: ghcr.io/goauthentik/server:${AUTHENTIK_VERSION}
-    restart: unless-stopped
-    command: server
+    image: ghcr.io/goauthentik/server:2025.12.3
     depends_on:
       postgresql:
         condition: service_healthy
-    environment:
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
-      AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED}
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
-      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRESQL__NAME}
-      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRESQL__USER}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
     volumes:
       - authentik_media:/media
       - authentik_templates:/templates
-    networks:
-      - authentik_internal
-      - proxy_net
-
-  authentik-worker:
-    image: ghcr.io/goauthentik/server:${AUTHENTIK_VERSION}
-    restart: unless-stopped
-    command: worker
-    depends_on:
-      postgresql:
-        condition: service_healthy
     environment:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
       AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED}
@@ -51,13 +33,33 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRESQL__NAME}
       AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRESQL__USER}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
+    networks:
+      - authentik_internal
+      - proxy_net
+    command: server
+    restart: unless-stopped
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2025.12.3
+    depends_on:
+      postgresql:
+        condition: service_healthy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - authentik_media:/media
       - authentik_certs:/certs
       - authentik_templates:/templates
+    environment:
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED}
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRESQL__NAME}
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRESQL__USER}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD}
     networks:
       - authentik_internal
+    command: worker
+    restart: unless-stopped
 
 volumes:
   postgresql_data:
