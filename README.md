@@ -6,7 +6,6 @@ Docker stack for authentik (OIDC IdP), based on `template_docker`.
 
 - `docker-compose.yml` with:
   - `postgresql`
-  - `redis`
   - `authentik-server`
   - `authentik-worker`
 - `.env.example` as secret-free template
@@ -23,8 +22,7 @@ docker compose up -d
 
 Open:
 
-- http://localhost:9000
-- https://localhost:9443
+- via reverse proxy only (no host port publishing in this stack)
 
 ## Security notes
 
@@ -35,3 +33,19 @@ Open:
 ## Reverse proxy integration (recommended)
 
 Use your existing Caddy reverse proxy as entrypoint and expose authentik only internally.
+
+## SMTP relay integration
+
+For outbound mails (invites, password reset, notifications), this stack can use
+[`smtp-relay-docker`](https://github.com/sidey79/smtp-relay-docker).
+
+The default `.env.example` points Authentik to SMTP host `smtp-relay` on port `25` inside
+`network_backend_net`.
+
+## Networking model
+
+- `authentik-server` is attached to:
+  - `authentik_internal` (internal app network)
+  - external proxy network `network_backend_net`
+- No container ports are published to the host.
+- Ensure `network_backend_net` exists before starting this stack.
