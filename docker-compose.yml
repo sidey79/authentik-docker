@@ -15,7 +15,7 @@ services:
       - postgresql_data:/var/lib/postgresql/data
 
   redis:
-    image: docker.io/library/redis:7-alpine@sha256:8da19c7399dca900c6822a1cf30f9d2285585e2c4b457ff4095b0f4500054d3f
+    image: docker.io/library/redis:7-alpine@sha256:4783bb5c3ecd5a93ce0a779ed2c44d5472043bb2cb7251f5390700748c62e62b
     restart: unless-stopped
     command: --save 60 1 --loglevel warning
     healthcheck:
